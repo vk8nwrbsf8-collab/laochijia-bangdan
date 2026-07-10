@@ -3,11 +3,12 @@
  * 路由: /u/:uid/shops  /u/:uid/dishes
  */
 import React, { useEffect, useState } from 'react';
-import { useParams, NavLink, useLocation } from 'react-router-dom';
+import { useParams, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useAuth } from '../AuthContext';
 import { Shop, Dish, UserProfile } from '../types';
-import { MapPin, UtensilsCrossed, Store, Utensils, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { MapPin, UtensilsCrossed, Store, Utensils, ThumbsUp, ThumbsDown, LogIn, ChevronRight } from 'lucide-react';
 import { cn } from '../components/Layout';
 
 const RATINGS = ['全部', '夯', '顶级', '人上人', 'NPC', '拉'];
@@ -24,7 +25,19 @@ function RatingBadge({ rating }: { rating: string }) {
 export default function PublicList() {
   const { uid, listType } = useParams<{ uid: string; listType: 'shops' | 'dishes' }>();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const type = listType === 'dishes' ? 'dishes' : 'shops';
+
+  // 未登录用户点击「登录」：跳到登录页，携带 redirect 参数，登录成功后跳回
+  const handleLogin = () => {
+    navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: false });
+  };
+
+  // 已登录用户：点击进入自己的榜单
+  const handleGoMyList = () => {
+    navigate('/shops');
+  };
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [shops, setShops] = useState<Shop[]>([]);
@@ -114,7 +127,23 @@ export default function PublicList() {
           </div>
           <span className="text-sm font-bold text-primary">老吃家榜单</span>
         </div>
-        <span className="text-xs text-tertiary bg-secondary px-2 py-1 rounded-full">只读浏览</span>
+        {!authLoading && (
+          user ? (
+            <button
+              onClick={handleGoMyList}
+              className="flex items-center gap-1 text-xs font-medium text-accent bg-accent/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+            >
+              进入我的榜单 <ChevronRight className="w-3 h-3" />
+            </button>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="flex items-center gap-1 text-xs font-medium text-white bg-accent px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+            >
+              <LogIn className="w-3 h-3" /> 登录/注册
+            </button>
+          )
+        )}
       </div>
 
       {/* ── Banner ── */}
@@ -225,6 +254,22 @@ export default function PublicList() {
           )}
         </div>
       </div>
+
+      {/* ── 未登录引导悬浮条 ── */}
+      {!authLoading && !user && (
+        <div className="shrink-0 bg-accent px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-xs font-medium leading-tight">想建立自己的美食榜单？</p>
+            <p className="text-white/70 text-[11px] mt-0.5">注册老吃家，记录你的私人美食图鉴</p>
+          </div>
+          <button
+            onClick={handleLogin}
+            className="shrink-0 bg-white text-accent text-xs font-bold px-4 py-2 rounded-full active:scale-95 transition-transform"
+          >
+            免费注册
+          </button>
+        </div>
+      )}
 
       {/* ── 底部来源标注 ── */}
       <div className="shrink-0 py-4 text-center text-xs text-tertiary border-t border-theme bg-primary">

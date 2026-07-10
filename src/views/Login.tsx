@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { UtensilsCrossed, Eye, EyeOff, Phone, Mail } from 'lucide-react';
 import {
   createUserWithEmailAndPassword,
@@ -33,6 +33,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // 登录成功后跳回的页面（分享链接场景）
+  const redirectTo = searchParams.get('redirect') || '/';
 
   // 判断当前输入类型
   const accountIsPhone = isPhone(account);
@@ -83,7 +86,7 @@ export default function Login() {
     setGoogleLoading(true);
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
-      navigate('/');
+      navigate(redirectTo, { replace: true });
     } catch (err: any) {
       console.error('Google auth error:', err.code, err.message);
       const msg = getFirebaseError(err.code);
@@ -107,7 +110,7 @@ export default function Login() {
       } else {
         await signInWithEmailAndPassword(auth, firebaseEmail, password);
       }
-      navigate('/');
+      navigate(redirectTo, { replace: true });
     } catch (err: any) {
       console.error('Auth error:', err.code, err.message);
       setError(getFirebaseError(err.code));
