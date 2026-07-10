@@ -3,7 +3,6 @@ import { getAuth } from 'firebase/auth';
 import { initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import { FirestoreErrorInfo } from '../types';
 
-// Vite 环境变量（VITE_ 前缀），本地开发用 .env.local，Vercel 部署时在面板配置
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -17,8 +16,7 @@ const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || '(defau
 
 const app = initializeApp(firebaseConfig);
 
-// experimentalForceLongPolling：绕过国内对 WebSocket/SSE 的封锁，改用 HTTP 长轮询
-// 对国内网络环境下访问 Firestore 至关重要
+// experimentalForceLongPolling：改用 HTTP 长轮询，绕过国内对 WebSocket/SSE 的封锁
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
   cacheSizeBytes: CACHE_SIZE_UNLIMITED,
