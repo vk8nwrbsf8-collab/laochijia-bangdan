@@ -72,19 +72,40 @@ export default function Poster() {
   const handleDownload = async () => {
     if (!posterRef.current) return;
     setGenerating(true);
+    const fileName = `${profile?.nickname || "美食家"}的${type === "shop" ? "商家" : "餐品"}榜单.png`;
     try {
       const dataUrl = await toPng(posterRef.current, {
         quality: 1,
-        pixelRatio: 2,
+        pixelRatio: 3,
         cacheBust: true,
       });
+
+      // 转成 Blob
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      // 优先：Web Share API（手机端可直接「存储到相册」）
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: fileName,
+        });
+        return;
+      }
+
+      // 降级：传统下载链接（PC 浏览器 / 不支持 share 的环境）
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = `${profile?.nickname || "美食家"}的${type === "shop" ? "商家" : "餐品"}榜单.png`;
-      link.href = dataUrl;
+      link.download = fileName;
+      link.href = url;
       link.click();
-    } catch (err) {
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } catch (err: any) {
+      // 用户取消分享不算错误
+      if (err?.name === "AbortError") return;
       console.error("Failed to generate poster", err);
-      alert("生成海报失败");
+      alert("生成海报失败，请长按海报图片手动保存到相册");
     } finally {
       setGenerating(false);
     }
@@ -111,13 +132,14 @@ export default function Poster() {
             {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Link className="w-3.5 h-3.5" />}
             {copied ? '已复制' : '复制链接'}
           </button>
-          {/* 下载海报 */}
+          {/* 保存/下载海报 */}
           <button
             onClick={handleDownload}
             disabled={generating}
-            className="w-10 h-10 flex items-center justify-center bg-accent text-white rounded-full font-medium shadow-lg active:scale-95 transition-transform disabled:opacity-70"
+            className="flex items-center gap-1.5 px-3 py-2 bg-accent text-white rounded-full text-xs font-bold shadow-lg active:scale-95 transition-transform disabled:opacity-70"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-3.5 h-3.5" />
+            {generating ? "生成中…" : "保存海报"}
           </button>
         </div>
       </div>
