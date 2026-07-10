@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Firebase 本地配置（含密钥，不提交到 GitHub）
+firebase-applet-config.json
+firebase-blueprint.json
+metadata.json

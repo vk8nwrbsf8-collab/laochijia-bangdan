@@ -235,7 +235,7 @@ export default function PublicList() {
 }
 
 // ── 只读商家卡片 ──
-function PublicShopCard({ shop }: { shop: Shop }) {
+function PublicShopCard({ shop }: { shop: Shop; key?: React.Key }) {
   return (
     <div className="bg-primary rounded-xl shadow-card border border-theme flex h-24 overflow-hidden">
       <div className="w-24 h-full shrink-0 bg-secondary overflow-hidden">
@@ -271,7 +271,7 @@ function PublicShopCard({ shop }: { shop: Shop }) {
 }
 
 // ── 只读餐品卡片 ──
-function PublicDishCard({ dish }: { dish: Dish }) {
+function PublicDishCard({ dish }: { dish: Dish; key?: React.Key }) {
   return (
     <div className="bg-primary rounded-xl shadow-card border border-theme flex h-24 overflow-hidden">
       <div className="w-24 h-full shrink-0 bg-secondary overflow-hidden">
