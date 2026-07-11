@@ -5,8 +5,12 @@ import './index.css';
 
 /**
  * 国内网络代理：拦截 Firebase API 请求，通过 /api/proxy 转发
- * 仅在非 localhost 环境下生效（即 Vercel 生产环境）
+ * 仅在非 localhost 环境下生效（Cloudflare Pages / Vercel 生产环境均支持）
  * 解决 googleapis.com 在国内被封锁的问题
+ *
+ * 代理路径：/api/proxy?url=<encoded_firebase_url>
+ * - Cloudflare Pages：由 functions/api/proxy.js 处理
+ * - Vercel：由 api/proxy.js 处理
  */
 const PROXY_HOSTS = [
   'identitytoolkit.googleapis.com',
